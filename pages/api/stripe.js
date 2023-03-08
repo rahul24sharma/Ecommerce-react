@@ -1,5 +1,6 @@
+import Stripe from 'stripe';
 
-const stripe = require('stripe')(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -15,11 +16,10 @@ export default async function handler(req, res) {
         line_items: req.body.map((item) => {
           const img = item.image[0].asset._ref;
           const newImage = img.replace('image-', 'https://cdn.sanity.io/images/3hsgbyl9/production/').replace('-webp', '.webp');
-          console.log("IMAGE", newImage)
 
           return {
             price_data: { 
-              currency: 'USD',
+              currency: 'usd',
               product_data: { 
                 name: item.name,
                 images: [newImage],
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         cancel_url: `${req.headers.origin}/canceled`,
       }
 
-      // Create Checkout  from body params.
+      // Create Checkout Sessions from body params.
       const session = await stripe.checkout.sessions.create(params);
 
       res.status(200).json(session);
